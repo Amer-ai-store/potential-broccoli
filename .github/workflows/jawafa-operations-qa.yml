@@ -1,0 +1,43 @@
+name: Jawafa Operations Console QA
+on:
+  pull_request:
+    paths:
+      - "dashboard/jawafa-operations.html"
+      - "dashboard/jawafa-gate15.html"
+      - "dashboard/tests/jawafa-operations.test.cjs"
+      - ".github/workflows/jawafa-operations-qa.yml"
+  push:
+    branches: [main]
+    paths:
+      - "dashboard/jawafa-operations.html"
+      - "dashboard/jawafa-gate15.html"
+      - "dashboard/tests/jawafa-operations.test.cjs"
+      - ".github/workflows/jawafa-operations-qa.yml"
+permissions:
+  contents: read
+jobs:
+  static-and-parser-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "22"
+      - run: node --test dashboard/tests/jawafa-operations.test.cjs
+      - name: Chromium live DOM smoke test
+        shell: bash
+        run: |
+          set -euo pipefail
+          CHROME=$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)
+          if [ -z "$CHROME" ]; then
+            echo "Chrome unavailable: browser acceptance not proven"
+            exit 1
+          fi
+          timeout 40s "$CHROME" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --dump-dom "file://$GITHUB_WORKSPACE/dashboard/jawafa-operations.html#checks" > /tmp/jawafa-browser-dom.html
+          grep -Fq 'id="screen-checks"' /tmp/jawafa-browser-dom.html
+          grep -Fq 'class="section active" id="screen-checks"' /tmp/jawafa-browser-dom.html
+          grep -Fq 'data-page="staff"' /tmp/jawafa-browser-dom.html
+          grep -Fq 'data-page="receiving"' /tmp/jawafa-browser-dom.html
+          grep -Fq 'data-page="agents"' /tmp/jawafa-browser-dom.html
+          echo "Chromium route + navigation smoke test: PASS"

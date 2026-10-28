@@ -1,0 +1,8 @@
+{
+  "name": "Remix: Aura AI Marketplace",
+  "description": "A smart AI marketplace featuring visual search, price comparison, and automated product discovery across social media and the web.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

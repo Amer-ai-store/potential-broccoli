@@ -1,0 +1,136 @@
+{
+  "format": "amer-link",
+  "version": 1,
+  "createdAt": "2026-10-23",
+  "owner": {
+    "email": "zxzx.mohammad91@gmail.com"
+  },
+  "relation": {
+    "type": "command-center<->app",
+    "direction": "app -> command-center (data), command-center -> repo (tasks)",
+    "management": "owner-only read; app writes store data only"
+  },
+  "projects": {
+    "commandCenter": {
+      "name": "Amer AI Store — مركز القيادة",
+      "url": "https://claude.ai/artifact/E8woaJS84Uy99NpG8xWe19",
+      "publicUrl": "https://mohammadzxzx1991.github.io/Mohammad-Ahmed-Ghannam/",
+      "source": "dashboard/index.html",
+      "sections": [
+        "home",
+        "tasks",
+        "stages",
+        "workspaces",
+        "map",
+        "agents",
+        "advisor",
+        "store",
+        "database",
+        "servers",
+        "github",
+        "activity",
+        "settings"
+      ]
+    },
+    "app": {
+      "name": "Amer Store (Android)",
+      "platform": "android",
+      "package": "com.aistudio.aicommerce.kpqzjx",
+      "source": "app/",
+      "firebaseAppId": "1:350618456564:android:cc3fc56b217e2fa53a69a1"
+    },
+    "repository": {
+      "provider": "github",
+      "repo": "Mohammadzxzx1991/Mohammad-Ahmed-Ghannam",
+      "branch": "main"
+    }
+  },
+  "channels": [
+    {
+      "id": "file-export",
+      "status": "active",
+      "from": "app",
+      "to": "commandCenter",
+      "how": "AdminScreen > تصدير البيانات للوحة الويب > لوحة المتجر > استيراد بيانات التطبيق",
+      "schema": {
+        "format": "amer-store-export",
+        "version": 1,
+        "collections": [
+          "users",
+          "products",
+          "orders",
+          "chatReports"
+        ]
+      },
+      "excluded": [
+        "bankCards",
+        "cartItems",
+        "searchHistory"
+      ]
+    },
+    {
+      "id": "firestore-live",
+      "status": "active",
+      "from": "app",
+      "to": "commandCenter",
+      "firebaseProject": "ameraistore-1c81d",
+      "collections": [
+        "users",
+        "products",
+        "orders",
+        "chat_reports"
+      ],
+      "auth": {
+        "appWrites": "anonymous",
+        "dashboardReads": "google:zxzx.mohammad91@gmail.com"
+      },
+      "rules": "firestore.rules"
+    },
+    {
+      "id": "ai-inference",
+      "status": "candidate v1.2.1, not deployed-verified",
+      "from": "supabase-dispatcher",
+      "to": "cloudflare-worker",
+      "baseUrl": "https://aas-free-generative-canary.zxzx-mohammad2027.workers.dev",
+      "endpoints": {
+        "health": "/health",
+        "infer": "/v1/infer",
+        "canary": "/v1/canary"
+      },
+      "auth": {
+        "type": "bearer",
+        "secretRef": "AAS_BRIDGE_SECRET",
+        "rotationRef": "AAS_BRIDGE_SECRET_NEXT"
+      }
+    }
+  ],
+  "conversations": {
+    "chatgpt-codex": [
+      "01a11fdc-1829-73c1-8dfd-2a4ca8fc0079",
+      "01a13140-17e0-7168-9a28-f71e37190060"
+    ],
+    "claude": "https://claude.ai/code/session_01T1PnVHd5HVUvsbh1PwseJJ"
+  },
+  "secrets": "none included — only secret NAMES (secretRef). Store values in your broker's secret vault.",
+  "links": [
+    {
+      "conversation": "01a11fdc-1829-73c1-8dfd-2a4ca8fc0079",
+      "source": "chatgpt-codex",
+      "workspace": "Cloud",
+      "branch": null,
+      "role": "command-center"
+    },
+    {
+      "conversation": "01a13140-17e0-7168-9a28-f71e37190060",
+      "source": "chatgpt-codex",
+      "branch": "claude/session-01a13140-17e0-7168-27ylxn",
+      "role": "app"
+    },
+    {
+      "conversation": "session_01T1PnVHd5HVUvsbh1PwseJJ",
+      "source": "claude-code",
+      "branch": "claude/import-codex-chatgpt-1vkh1p",
+      "role": "integration"
+    }
+  ]
+}

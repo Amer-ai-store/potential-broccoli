@@ -1,0 +1,31 @@
+# This repository is using GitHub's default code-scanning setup.
+# Advanced CodeQL uploads are rejected while that default setup remains enabled.
+# Keep the workflow present but disabled so the repository does not keep failing
+# on the conflicting advanced configuration.
+
+name: "CodeQL Advanced"
+
+on:
+  workflow_dispatch:
+
+jobs:
+  analyze:
+    if: false
+    name: Analyze (${{ matrix.language }})
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      packages: read
+      actions: read
+      contents: read
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - language: actions
+            build-mode: none
+
+    steps:
+      - name: Disabled by repo settings
+        run: echo "CodeQL advanced scanning is disabled because GitHub default setup is enabled for this repository."

@@ -1,0 +1,67 @@
+name: Android build and unit tests
+on:
+  pull_request:
+    paths:
+      - 'app/**'
+      - 'gradle/**'
+      - '*.gradle.kts'
+      - 'gradle.properties'
+      - '.github/workflows/android-build.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: android-build-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
+        with:
+          distribution: temurin
+          java-version: '21'
+      # The ubuntu-26.04 runner image no longer ships the Android SDK; this installs cmdline-tools and accepts licenses.
+      # Its default package list includes the removed 'tools' package, so name the packages explicitly.
+      - uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407 # v3.2.2
+        with:
+          packages: 'platform-tools platforms;android-36.1 build-tools;36.0.0'
+      - uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a # v4
+        with:
+          gradle-version: '9.3.1'
+      # Firebase keys turn on live store sync in the APK. They identify the project and are not secret,
+      # but ADMIN_PASSWORD is deliberately left out: the APK artifact is downloadable from this public repo.
+      - name: Write Firebase keys from repository secrets (optional)
+        env:
+          FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+          FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+        run: |
+          cp .env.example .env
+          for k in FIREBASE_API_KEY FIREBASE_APP_ID FIREBASE_PROJECT_ID; do
+            v="${!k}"
+            if [ -n "$v" ]; then
+              grep -v "^$k=" .env > .env.tmp && mv .env.tmp .env
+              printf '%s=%s\n' "$k" "$v" >> .env
+            fi
+          done
+      - name: Compile, run unit tests and build the debug APK
+        run: gradle :app:compileDebugKotlin :app:testDebugUnitTest :app:assembleDebug --no-daemon
+      - name: Upload debug APK
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: amer-store-debug-apk
+          path: app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
+          retention-days: 7
+      - name: Upload unit test reports
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: unit-test-reports
+          path: app/build/reports/tests/
+          retention-days: 7

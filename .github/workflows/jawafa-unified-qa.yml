@@ -1,0 +1,47 @@
+name: Jawafa Unified Main Dashboard & Private Bridge QA
+on:
+  pull_request:
+    paths:
+      - "dashboard/index.html"
+      - "dashboard/jawafa-integration.js"
+      - "dashboard/tests/jawafa-native-integration.test.cjs"
+      - "jawafa-command-bridge/**"
+      - ".github/workflows/jawafa-unified-qa.yml"
+  push:
+    branches: [main]
+    paths:
+      - "dashboard/index.html"
+      - "dashboard/jawafa-integration.js"
+      - "dashboard/tests/jawafa-native-integration.test.cjs"
+      - "jawafa-command-bridge/**"
+      - ".github/workflows/jawafa-unified-qa.yml"
+permissions:
+  contents: read
+jobs:
+  isolated-bridge-and-main-ui:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "24"
+      - name: Run durable operational API security and ACK/VERIFY tests
+        run: node --test jawafa-command-bridge/test.cjs
+      - name: Run native integration and code safety tests
+        run: node --test dashboard/tests/jawafa-native-integration.test.cjs
+      - name: Browser navigation, real DOM, no iframe
+        shell: bash
+        run: |
+          set -euo pipefail
+          CHROME=$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)
+          if [ -z "$CHROME" ]; then exit 1; fi
+          timeout 40s "$CHROME" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --dump-dom "file://$GITHUB_WORKSPACE/dashboard/index.html#jawafa-checks" > /tmp/jawafa-native-dom.html
+          grep -Fq 'data-view="jawafa-checks"' /tmp/jawafa-native-dom.html
+          grep -Fq 'data-view="jawafa-monitor"' /tmp/jawafa-native-dom.html
+          if grep -Fq 'iframe src="./jawafa-gate15.html"' /tmp/jawafa-native-dom.html; then exit 1; fi
+          timeout 40s "$CHROME" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --window-size=390,844 --force-device-scale-factor=2 --dump-dom "file://$GITHUB_WORKSPACE/dashboard/index.html#jawafa-people" > /tmp/jawafa-mobile-dom.html
+          grep -Fq 'data-view="jawafa-people"' /tmp/jawafa-mobile-dom.html
+          grep -Fq 'id="chip-nav"' /tmp/jawafa-mobile-dom.html
+          grep -Fq 'id="side-nav"' /tmp/jawafa-mobile-dom.html
+          echo "Desktop and phone viewport native DOM smoke tests passed"

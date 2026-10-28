@@ -1,0 +1,55 @@
+name: AAS Free Runtime & Security CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  signed-bridge-health:
+    name: Supabase signed bridge / read-only safety
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - name: Inspect public infrastructure health only
+        env:
+          URL: https://zvedrouuboxgbanzdnio.supabase.co/functions/v1/aas-signed-local-worker-bridge
+        run: |
+          python3 - <<'PY'
+          import json, os, urllib.request, urllib.error
+          root=os.environ["URL"]
+          with urllib.request.urlopen(root+"/health",timeout=20) as resp:
+              payload=json.load(resp)
+              assert resp.status==200
+          assert payload.get("service")=="aas-signed-local-worker-bridge",payload
+          assert payload.get("railway_dependency") is False,payload
+          assert payload.get("accounting_db_access") is False,payload
+          assert payload.get("scope")=="ISOLATED_SANDBOX",payload
+          assert isinstance(payload.get("server_time_ms"),int),payload
+          try:
+              urllib.request.urlopen(urllib.request.Request(root,data=b'{"action":"heartbeat"}',headers={"Content-Type":"application/json"}),timeout=20)
+              raise AssertionError("Unsigned POST was accepted")
+          except urllib.error.HTTPError as error:
+              assert error.code==401,f"Expected 401, received {error.code}"
+          print("PASS: reachable health, no Railway dependency, no accounting access, unsigned POST denied")
+          print("NOTE: This does NOT prove model execution, live ChatGPT routing, or QA of production tasks")
+          PY
+
+  cloudflare-adapter-regression:
+    name: Existing Cloudflare candidate regression (not deployed)
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Syntax-check local worker and security diagnostics (no secret execution)
+        run: |
+          node --check aas-cc/runtime/worker/aas-worker-once.js
+          node --check aas-cc/runtime/worker/worker-security-test.js
+      - name: Run candidate unit tests without secrets
+        run: node --test aas-cc/cloudflare-recovery/tests/*.spec.mjs
+
