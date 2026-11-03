@@ -200,6 +200,9 @@ def upsert_issue(issues, title, body, close=False):
             print(f"CLOSED issue #{issue['number']}: {title}")
         return
     if issue:
+        marker = body.split("-->", 1)[0] + "-->" if body.startswith("<!-- aas-agent:") else ""
+        if issue.get("state") == "open" and marker and marker in (issue.get("body") or ""):
+            return  # Same incident version; avoid noisy AI re-analysis updates.
         if issue.get("body", "") != body or issue.get("state") != "open":
             request("PATCH", github_path(f"/issues/{issue['number']}"),
                     {"body": body, "state": "open"})
@@ -244,7 +247,8 @@ def inspect():
     )
     # Monitor only trusted in-repo workflows; exclude this automation to avoid loops.
     runs = [r for r in runs if r.get("path", "").startswith(".github/workflows/")
-            and r.get("path") != OWN_WORKFLOW]
+            and r.get("path") != OWN_WORKFLOW
+            and r.get("event") != "pull_request"]  # PR checks do not prove main is healthy.
     runs.sort(key=lambda r: r.get("created_at", ""), reverse=True)
     latest = {}
     for run in runs:
