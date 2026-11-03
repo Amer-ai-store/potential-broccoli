@@ -1,0 +1,25 @@
+name: Block legacy dashboard publishing
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  no-legacy-pages:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5 / Node.js 24
+        with:
+          persist-credentials: false
+      - name: Reject secondary Pages publishers
+        shell: bash
+        run: |
+          if grep -RInE "actions/(configure-pages|upload-pages-artifact|deploy-pages)@|^[[:space:]]*pages:[[:space:]]*write" .github/workflows --include='*.yml' --include='*.yaml' --exclude='legacy-pages-guard.yml'; then
+            echo "::error::Legacy dashboard Pages publishers are prohibited; use Amer-ai-store/Mohammad-Ahmed-Ghannam and release gates in Issue #102."
+            exit 1
+          fi
+          echo "PASS: no legacy Pages publishing workflows in this repository."
