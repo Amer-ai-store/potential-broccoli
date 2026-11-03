@@ -13,8 +13,8 @@
   "projects": {
     "commandCenter": {
       "name": "Amer AI Store — مركز القيادة",
-      "url": "https://claude.ai/artifact/E8woaJS84Uy99NpG8xWe19",
-      "publicUrl": "https://mohammadzxzx1991.github.io/Mohammad-Ahmed-Ghannam/",
+      "url": "https://amer-ai-store.github.io/Mohammad-Ahmed-Ghannam/",
+      "publicUrl": "https://amer-ai-store.github.io/Mohammad-Ahmed-Ghannam/",
       "source": "dashboard/index.html",
       "sections": [
         "home",
@@ -41,7 +41,7 @@
     },
     "repository": {
       "provider": "github",
-      "repo": "Mohammadzxzx1991/Mohammad-Ahmed-Ghannam",
+      "repo": "Amer-ai-store/Mohammad-Ahmed-Ghannam",
       "branch": "main"
     }
   },
