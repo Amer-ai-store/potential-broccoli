@@ -242,6 +242,10 @@ def incident_body(run, kind, details, action):
 
 
 def inspect():
+    if os.environ.get("AAS_AI_PROBE", "").lower() == "true":
+        reply = ai_advice("Agent installation probe", [], "readiness_check", [])
+        print("GitHub Models inference:",
+              "AVAILABLE" if not reply.startswith("التشخيص الأولي يعتمد") else "DEGRADED")
     runs = request("GET", github_path("/actions/runs?per_page=100")).get(
         "workflow_runs", []
     )
