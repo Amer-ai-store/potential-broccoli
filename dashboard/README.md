@@ -3,7 +3,7 @@
 مركز قيادة لمشروع Amer AI Store في ملف HTML واحد (`index.html`)، على نمط لوحة ChatGPT
 «amer-ai-command-center». يجمع إدارة المشروع ولوحة المتجر في صفحة واحدة.
 
-النسخة المنشورة: https://claude.ai/artifact/E8woaJS84Uy99NpG8xWe19 (كل قسم له رابط، مثل `#advisor` و`#tasks`).
+اللوحة المركزية الوحيدة المعتمدة: https://amer-ai-store.github.io/Mohammad-Ahmed-Ghannam/ (كل قسم له رابط، مثل `#advisor` و`#tasks`). لا ينشر هذا المستودع الثانوي لوحات قديمة.
 
 ## الأقسام
 
@@ -48,7 +48,7 @@
 ## المتجر الحي (Firebase)
 
 يرسل التطبيق بياناته إلى Firestore مع كل تغيير (`FirestoreSync`)، وتعرضها «لوحة المتجر» مباشرة بعد تسجيل الدخول بحساب Google الخاص بالمالك.
-يعمل ذلك على نسخة GitHub Pages فقط: https://mohammadzxzx1991.github.io/Mohammad-Ahmed-Ghannam/#store
+يعمل ذلك على نسخة GitHub Pages فقط: https://amer-ai-store.github.io/Mohammad-Ahmed-Ghannam/#store
 لأن صفحة Claude لا تتصل بالإنترنت. الإعداد خطوة بخطوة في `docs/firebase-setup.md`، وإعدادات الويب في `firebase-config.js`.
 
 ## المخطِّط: توزيع المهام بالذكاء الاصطناعي
